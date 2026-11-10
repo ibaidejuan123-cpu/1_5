@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,11 +20,11 @@
             margin: 0;
         }
         </style>
-        <title>Geoportal Soldata Spain</title>
+        <title></title>
     </head>
     <body>
-        <div id="map"></div>
-
+        <div id="map">
+        </div>
         <script src="js/qgis2web_expressions.js"></script>
         <script src="js/leaflet.js"></script>
         <script src="js/l.control.layers.tree.min.js"></script>
@@ -39,94 +39,827 @@
         <script src="js/leaflet-measure.js"></script>
       
         <script>
-        // 1. CREACIÓN DEL MAPA (¡Esto debe ir antes que cualquier capa!)
-        var map = L.map('map', {
-            zoomControl: false, 
-            maxZoom: 28, 
-            minZoom: 1
-        }).fitBounds([[34.4517317996146,-10.941381390934747],[44.028175045273564,12.679387416945799]]);
+        var map = l.map('map', {
+            zoomcontrol:false, maxzoom:28, minzoom:1
+        }).fitbounds([[34.4517317996146,-10.941381390934747],[44.028175045273564,12.679387416945799]]);
+	var osm = l.tilelayer(
+    		'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+    		{
+        	attribution: '&copy; openstreetmap contributors',
+        	maxzoom: 19
+    		}
+		);
 
-        // 2. CAPA BASE DE FONDO (Carto Voyager sin restricciones de clave API)
-        var osm = L.tileLayer(
-            'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
-            {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                subdomains: 'abcd',
-                maxZoom: 20
-            }
-        ).addTo(map);
+	osm.addto(map);
+	
+var osmlabels = l.tilelayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    attribution: '© openstreetmap contributors',
+    pane: 'shadowpane', // esto las sitúa por encima de los marcadores
+    zindex: 1000
+}).addto(map);
 
-        // 3. ETIQUETAS SUPERIORES
-        var osmLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
 
-        var hash = new L.Hash(map);
-        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
-        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
-
-        function removeEmptyRowsFromPopupContent(content, feature) {
-            var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = content;
-            var rows = tempDiv.querySelectorAll('tr');
-            for (var i = 0; i < rows.length; i++) {
-                var td = rows[i].querySelector('td.visible-with-data');
-                var key = td ? td.id : '';
-                if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
-                    rows[i].parentNode.removeChild(rows[i]);
-                }
-            }
-            return tempDiv.innerHTML;
+        var hash = new l.hash(map);
+        map.attributioncontrol.setprefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="a js library for interactive maps">leaflet</a> &middot; <a href="https://qgis.org">qgis</a>');
+        var autolinker = new autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeemptyrowsfrompopupcontent(content, feature) {
+         var tempdiv = document.createelement('div');
+         tempdiv.innerhtml = content;
+         var rows = tempdiv.queryselectorall('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].queryselector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classlist.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentnode.removechild(rows[i]);
+             }
+         }
+         return tempdiv.innerhtml;
         }
-
-        function addClassToPopupIfMedia(content, popup) {
-            var tempDiv = document.createElement('div');
-            tempDiv.innerHTML = content;
-            var imgTd = tempDiv.querySelector('td img');
-            if (imgTd) {
-                var src = imgTd.getAttribute('src');
+        // modify popup if contains media
+        function addclasstopopupifmedia(content, popup) {
+            var tempdiv = document.createelement('div');
+            tempdiv.innerhtml = content;
+            var imgtd = tempdiv.queryselector('td img');
+            if (imgtd) {
+                var src = imgtd.getattribute('src');
                 if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
-                    popup._contentNode.classList.add('media');
-                    setTimeout(function() { popup.update(); }, 10);
+                    popup._contentnode.classlist.add('media');
+                    settimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createelement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgtd.parentnode.replacechild(audio, imgtd);
+                    popup._contentnode.classlist.add('media');
+                    settimeout(function() {
+                        popup.setcontent(tempdiv.innerhtml);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createelement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxheight = "60vh";
+                    video.style.maxwidth = "60vw";
+                    imgtd.parentnode.replacechild(video, imgtd);
+                    popup._contentnode.classlist.add('media');
+                    // aggiorna il popup quando il video carica i metadati
+                    video.addeventlistener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    settimeout(function() {
+                        popup.setcontent(tempdiv.innerhtml);
+                        popup.update();
+                    }, 10);
                 } else {
-                    popup._contentNode.classList.remove('media');
+                    popup._contentnode.classlist.remove('media');
                 }
             } else {
-                popup._contentNode.classList.remove('media');
+                popup._contentnode.classlist.remove('media');
             }
         }
-
-        var zoomControl = L.control.zoom({ position: 'topleft' }).addTo(map);
-        var measureControl = new L.Control.Measure({
+        var zoomcontrol = l.control.zoom({
+            position: 'topleft'
+        }).addto(map);
+        var measurecontrol = new l.control.measure({
             position: 'topleft',
-            primaryLengthUnit: 'meters',
-            secondaryLengthUnit: 'kilometers',
-            primaryAreaUnit: 'sqmeters',
-            secondaryAreaUnit: 'hectares'
+            primarylengthunit: 'meters',
+            secondarylengthunit: 'kilometers',
+            primaryareaunit: 'sqmeters',
+            secondaryareaunit: 'hectares'
         });
-        measureControl.addTo(map);
-        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
-        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        measurecontrol.addto(map);
+        document.getelementsbyclassname('leaflet-control-measure-toggle')[0].innerhtml = '';
+        document.getelementsbyclassname('leaflet-control-measure-toggle')[0].classname += ' fas fa-ruler';
+        var bounds_group = new l.featuregroup([]);
+        function setbounds() {
+        }
+        function pop_espaa_0(feature, layer) {
+            var popupcontent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['inspireid'] !== null ? autolinker.link(string(feature.properties['inspireid']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['country'] !== null ? autolinker.link(string(feature.properties['country']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlev'] !== null ? autolinker.link(string(feature.properties['natlev']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlevname'] !== null ? autolinker.link(string(feature.properties['natlevname']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natcode'] !== null ? autolinker.link(string(feature.properties['natcode']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nameunit'] !== null ? autolinker.link(string(feature.properties['nameunit']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut1'] !== null ? autolinker.link(string(feature.properties['codnut1']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut2'] !== null ? autolinker.link(string(feature.properties['codnut2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut3'] !== null ? autolinker.link(string(feature.properties['codnut3']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['layer'] !== null ? autolinker.link(string(feature.properties['layer']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['path'] !== null ? autolinker.link(string(feature.properties['path']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeemptyrowsfrompopupcontent(popupcontent, feature);
+			layer.on('popupopen', function(e) {
+				addclasstopopupifmedia(content, e.popup);
+			});
+			layer.bindpopup(content, { maxheight: 400 });
+        }
 
-        var bounds_group = new L.featureGroup([]);
-        function setBounds() {}
+        function style_espaa_0_0() {
+            return {
+                pane: 'pane_espaa_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dasharray: '',
+                linecap: 'butt',
+                linejoin: 'miter',
+                weight: 1.0, 
+                fillopacity: 0,
+                interactive: true,
+            }
+        }
+        map.createpane('pane_espaa_0');
+        map.getpane('pane_espaa_0').style.zindex = 400;
+        map.getpane('pane_espaa_0').style['mix-blend-mode'] = 'normal';
+       
+        function pop_comunidadesautnomas_1(feature, layer) {
+            var popupcontent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['inspireid'] !== null ? autolinker.link(string(feature.properties['inspireid']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['country'] !== null ? autolinker.link(string(feature.properties['country']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlev'] !== null ? autolinker.link(string(feature.properties['natlev']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlevname'] !== null ? autolinker.link(string(feature.properties['natlevname']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natcode'] !== null ? autolinker.link(string(feature.properties['natcode']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nameunit'] !== null ? autolinker.link(string(feature.properties['nameunit']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut1'] !== null ? autolinker.link(string(feature.properties['codnut1']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut2'] !== null ? autolinker.link(string(feature.properties['codnut2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut3'] !== null ? autolinker.link(string(feature.properties['codnut3']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['area_m2'] !== null ? autolinker.link(string(feature.properties['area_m2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['area_ha'] !== null ? autolinker.link(string(feature.properties['area_ha']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeemptyrowsfrompopupcontent(popupcontent, feature);
+			layer.on('popupopen', function(e) {
+				addclasstopopupifmedia(content, e.popup);
+			});
+			layer.bindpopup(content, { maxheight: 400 });
+        }
 
-        // 4. PANELES DE IMÁGENES RASTER (Años 1996 a 2007)
-        var anos = ['1996_4', '1997_5', '1998_6', '1999_7', '2000_8', '2001_9', '2002_10', '2003_11', '2004_12', '2005_13', '2006_14', '2007_15'];
+        function style_comunidadesautnomas_1_0() {
+            return {
+                pane: 'pane_comunidadesautnomas_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dasharray: '',
+                linecap: 'butt',
+                linejoin: 'miter',
+                weight: 1, 
+                fillopacity: 0,
+                interactive: true,
+            }
+        }
+        map.createpane('pane_comunidadesautnomas_1');
+        map.getpane('pane_comunidadesautnomas_1').style.zindex = 401;
+        map.getpane('pane_comunidadesautnomas_1').style['mix-blend-mode'] = 'normal';
         
-        anos.forEach(function(ano, index) {
-            var paneId = 'pane_' + ano;
-            map.createPane(paneId);
-            map.getPane(paneId).style.zIndex = 404 + index;
-            
-            var imgUrl = 'data/' + ano + '.png';
-            var imgBounds = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-            var layerImg = new L.imageOverlay(imgUrl, imgBounds, {pane: paneId});
-            bounds_group.addLayer(layerImg);
-            map.addLayer(layerImg);
+        function pop_provincias_2(feature, layer) {
+            var popupcontent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['inspireid'] !== null ? autolinker.link(string(feature.properties['inspireid']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['country'] !== null ? autolinker.link(string(feature.properties['country']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlev'] !== null ? autolinker.link(string(feature.properties['natlev']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlevname'] !== null ? autolinker.link(string(feature.properties['natlevname']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natcode'] !== null ? autolinker.link(string(feature.properties['natcode']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nameunit'] !== null ? autolinker.link(string(feature.properties['nameunit']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut1'] !== null ? autolinker.link(string(feature.properties['codnut1']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut2'] !== null ? autolinker.link(string(feature.properties['codnut2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut3'] !== null ? autolinker.link(string(feature.properties['codnut3']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['layer'] !== null ? autolinker.link(string(feature.properties['layer']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['path'] !== null ? autolinker.link(string(feature.properties['path']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchorpercent'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchorpercent']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchorclipping'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchorclipping']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchortype'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchortype']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchortextpoint'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchortextpoint']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeemptyrowsfrompopupcontent(popupcontent, feature);
+			layer.on('popupopen', function(e) {
+				addclasstopopupifmedia(content, e.popup);
+			});
+			layer.bindpopup(content, { maxheight: 400 });
+        }
+
+        function style_provincias_2_0() {
+            return {
+                pane: 'pane_provincias_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dasharray: '',
+                linecap: 'butt',
+                linejoin: 'miter',
+                weight: 1, 
+                fillopacity: 0,
+                interactive: true,
+            }
+        }
+        map.createpane('pane_provincias_2');
+        map.getpane('pane_provincias_2').style.zindex = 402;
+        map.getpane('pane_provincias_2').style['mix-blend-mode'] = 'normal';
+        
+        function pop_municipios_3(feature, layer) {
+            var popupcontent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['inspireid'] !== null ? autolinker.link(string(feature.properties['inspireid']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['country'] !== null ? autolinker.link(string(feature.properties['country']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlev'] !== null ? autolinker.link(string(feature.properties['natlev']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlevname'] !== null ? autolinker.link(string(feature.properties['natlevname']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natcode'] !== null ? autolinker.link(string(feature.properties['natcode']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nameunit'] !== null ? autolinker.link(string(feature.properties['nameunit']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut1'] !== null ? autolinker.link(string(feature.properties['codnut1']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut2'] !== null ? autolinker.link(string(feature.properties['codnut2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut3'] !== null ? autolinker.link(string(feature.properties['codnut3']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['sup_m2'] !== null ? autolinker.link(string(feature.properties['sup_m2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['inspireid_'] !== null ? autolinker.link(string(feature.properties['inspireid_']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['country_2'] !== null ? autolinker.link(string(feature.properties['country_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlev_2'] !== null ? autolinker.link(string(feature.properties['natlev_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natlevna_1'] !== null ? autolinker.link(string(feature.properties['natlevna_1']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['natcode_2'] !== null ? autolinker.link(string(feature.properties['natcode_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nameunit_2'] !== null ? autolinker.link(string(feature.properties['nameunit_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut1_2'] !== null ? autolinker.link(string(feature.properties['codnut1_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut2_2'] !== null ? autolinker.link(string(feature.properties['codnut2_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['codnut3_2'] !== null ? autolinker.link(string(feature.properties['codnut3_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['sup_m2_2'] !== null ? autolinker.link(string(feature.properties['sup_m2_2']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchorpercent'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchorpercent']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchorclipping'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchorclipping']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchortype'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchortype']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['auxiliary_storage_labeling_lineanchortextpoint'] !== null ? autolinker.link(string(feature.properties['auxiliary_storage_labeling_lineanchortextpoint']).replace(/'/g, '\'').tolocalestring()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeemptyrowsfrompopupcontent(popupcontent, feature);
+			layer.on('popupopen', function(e) {
+				addclasstopopupifmedia(content, e.popup);
+			});
+			layer.bindpopup(content, { maxheight: 400 });
+        }
+
+        function style_municipios_3_0() {
+            return {
+                pane: 'pane_municipios_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dasharray: '',
+                linecap: 'butt',
+                linejoin: 'miter',
+                weight: 1, 
+                fillopacity: 0,
+                interactive: true,
+            }
+        }
+        map.createpane('pane_municipios_3');
+        map.getpane('pane_municipios_3').style.zindex = 403;
+        map.getpane('pane_municipios_3').style['mix-blend-mode'] = 'normal';
+        
+        map.createpane('pane_1996_4');
+        map.getpane('pane_1996_4').style.zindex = 404;
+        var img_1996_4 = 'data/1996_4.png';
+        var img_bounds_1996_4 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_1996_4 = new l.imageoverlay(img_1996_4,
+                                              img_bounds_1996_4,
+                                              {pane: 'pane_1996_4'});
+        bounds_group.addlayer(layer_1996_4);
+        map.addlayer(layer_1996_4);
+        map.createpane('pane_1997_5');
+        map.getpane('pane_1997_5').style.zindex = 405;
+        var img_1997_5 = 'data/1997_5.png';
+        var img_bounds_1997_5 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_1997_5 = new l.imageoverlay(img_1997_5,
+                                              img_bounds_1997_5,
+                                              {pane: 'pane_1997_5'});
+        bounds_group.addlayer(layer_1997_5);
+        map.addlayer(layer_1997_5);
+        map.createpane('pane_1998_6');
+        map.getpane('pane_1998_6').style.zindex = 406;
+        var img_1998_6 = 'data/1998_6.png';
+        var img_bounds_1998_6 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_1998_6 = new l.imageoverlay(img_1998_6,
+                                              img_bounds_1998_6,
+                                              {pane: 'pane_1998_6'});
+        bounds_group.addlayer(layer_1998_6);
+        map.addlayer(layer_1998_6);
+        map.createpane('pane_1999_7');
+        map.getpane('pane_1999_7').style.zindex = 407;
+        var img_1999_7 = 'data/1999_7.png';
+        var img_bounds_1999_7 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_1999_7 = new l.imageoverlay(img_1999_7,
+                                              img_bounds_1999_7,
+                                              {pane: 'pane_1999_7'});
+        bounds_group.addlayer(layer_1999_7);
+        map.addlayer(layer_1999_7);
+        map.createpane('pane_2000_8');
+        map.getpane('pane_2000_8').style.zindex = 408;
+        var img_2000_8 = 'data/2000_8.png';
+        var img_bounds_2000_8 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2000_8 = new l.imageoverlay(img_2000_8,
+                                              img_bounds_2000_8,
+                                              {pane: 'pane_2000_8'});
+        bounds_group.addlayer(layer_2000_8);
+        map.addlayer(layer_2000_8);
+        map.createpane('pane_2001_9');
+        map.getpane('pane_2001_9').style.zindex = 409;
+        var img_2001_9 = 'data/2001_9.png';
+        var img_bounds_2001_9 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2001_9 = new l.imageoverlay(img_2001_9,
+                                              img_bounds_2001_9,
+                                              {pane: 'pane_2001_9'});
+        bounds_group.addlayer(layer_2001_9);
+        map.addlayer(layer_2001_9);
+        map.createpane('pane_2002_10');
+        map.getpane('pane_2002_10').style.zindex = 410;
+        var img_2002_10 = 'data/2002_10.png';
+        var img_bounds_2002_10 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2002_10 = new l.imageoverlay(img_2002_10,
+                                              img_bounds_2002_10,
+                                              {pane: 'pane_2002_10'});
+        bounds_group.addlayer(layer_2002_10);
+        map.addlayer(layer_2002_10);
+        map.createpane('pane_2003_11');
+        map.getpane('pane_2003_11').style.zindex = 411;
+        var img_2003_11 = 'data/2003_11.png';
+        var img_bounds_2003_11 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2003_11 = new l.imageoverlay(img_2003_11,
+                                              img_bounds_2003_11,
+                                              {pane: 'pane_2003_11'});
+        bounds_group.addlayer(layer_2003_11);
+        map.addlayer(layer_2003_11);
+        map.createpane('pane_2004_12');
+        map.getpane('pane_2004_12').style.zindex = 412;
+        var img_2004_12 = 'data/2004_12.png';
+        var img_bounds_2004_12 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2004_12 = new l.imageoverlay(img_2004_12,
+                                              img_bounds_2004_12,
+                                              {pane: 'pane_2004_12'});
+        bounds_group.addlayer(layer_2004_12);
+        map.addlayer(layer_2004_12);
+        map.createpane('pane_2005_13');
+        map.getpane('pane_2005_13').style.zindex = 413;
+        var img_2005_13 = 'data/2005_13.png';
+        var img_bounds_2005_13 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2005_13 = new l.imageoverlay(img_2005_13,
+                                              img_bounds_2005_13,
+                                              {pane: 'pane_2005_13'});
+        bounds_group.addlayer(layer_2005_13);
+        map.addlayer(layer_2005_13);
+        map.createpane('pane_2006_14');
+        map.getpane('pane_2006_14').style.zindex = 414;
+        var img_2006_14 = 'data/2006_14.png';
+        var img_bounds_2006_14 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2006_14 = new l.imageoverlay(img_2006_14,
+                                              img_bounds_2006_14,
+                                              {pane: 'pane_2006_14'});
+        bounds_group.addlayer(layer_2006_14);
+        map.addlayer(layer_2006_14);
+        map.createpane('pane_2007_15');
+        map.getpane('pane_2007_15').style.zindex = 415;
+        var img_2007_15 = 'data/2007_15.png';
+        var img_bounds_2007_15 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2007_15 = new l.imageoverlay(img_2007_15,
+                                              img_bounds_2007_15,
+                                              {pane: 'pane_2007_15'});
+        bounds_group.addlayer(layer_2007_15);
+        map.addlayer(layer_2007_15);
+        map.createpane('pane_2008_16');
+        map.getpane('pane_2008_16').style.zindex = 416;
+        var img_2008_16 = 'data/2008_16.png';
+        var img_bounds_2008_16 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2008_16 = new l.imageoverlay(img_2008_16,
+                                              img_bounds_2008_16,
+                                              {pane: 'pane_2008_16'});
+        bounds_group.addlayer(layer_2008_16);
+        map.addlayer(layer_2008_16);
+        map.createpane('pane_2009_17');
+        map.getpane('pane_2009_17').style.zindex = 417;
+        var img_2009_17 = 'data/2009_17.png';
+        var img_bounds_2009_17 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2009_17 = new l.imageoverlay(img_2009_17,
+                                              img_bounds_2009_17,
+                                              {pane: 'pane_2009_17'});
+        bounds_group.addlayer(layer_2009_17);
+        map.addlayer(layer_2009_17);
+        map.createpane('pane_2010_18');
+        map.getpane('pane_2010_18').style.zindex = 418;
+        var img_2010_18 = 'data/2010_18.png';
+        var img_bounds_2010_18 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2010_18 = new l.imageoverlay(img_2010_18,
+                                              img_bounds_2010_18,
+                                              {pane: 'pane_2010_18'});
+        bounds_group.addlayer(layer_2010_18);
+        map.addlayer(layer_2010_18);
+        map.createpane('pane_2011_19');
+        map.getpane('pane_2011_19').style.zindex = 419;
+        var img_2011_19 = 'data/2011_19.png';
+        var img_bounds_2011_19 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2011_19 = new l.imageoverlay(img_2011_19,
+                                              img_bounds_2011_19,
+                                              {pane: 'pane_2011_19'});
+        bounds_group.addlayer(layer_2011_19);
+        map.addlayer(layer_2011_19);
+        map.createpane('pane_2012_20');
+        map.getpane('pane_2012_20').style.zindex = 420;
+        var img_2012_20 = 'data/2012_20.png';
+        var img_bounds_2012_20 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2012_20 = new l.imageoverlay(img_2012_20,
+                                              img_bounds_2012_20,
+                                              {pane: 'pane_2012_20'});
+        bounds_group.addlayer(layer_2012_20);
+        map.addlayer(layer_2012_20);
+        map.createpane('pane_2013_21');
+        map.getpane('pane_2013_21').style.zindex = 421;
+        var img_2013_21 = 'data/2013_21.png';
+        var img_bounds_2013_21 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2013_21 = new l.imageoverlay(img_2013_21,
+                                              img_bounds_2013_21,
+                                              {pane: 'pane_2013_21'});
+        bounds_group.addlayer(layer_2013_21);
+        map.addlayer(layer_2013_21);
+        map.createpane('pane_2014_22');
+        map.getpane('pane_2014_22').style.zindex = 422;
+        var img_2014_22 = 'data/2014_22.png';
+        var img_bounds_2014_22 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2014_22 = new l.imageoverlay(img_2014_22,
+                                              img_bounds_2014_22,
+                                              {pane: 'pane_2014_22'});
+        bounds_group.addlayer(layer_2014_22);
+        map.addlayer(layer_2014_22);
+        map.createpane('pane_2015_23');
+        map.getpane('pane_2015_23').style.zindex = 423;
+        var img_2015_23 = 'data/2015_23.png';
+        var img_bounds_2015_23 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2015_23 = new l.imageoverlay(img_2015_23,
+                                              img_bounds_2015_23,
+                                              {pane: 'pane_2015_23'});
+        bounds_group.addlayer(layer_2015_23);
+        map.addlayer(layer_2015_23);
+        map.createpane('pane_2016_24');
+        map.getpane('pane_2016_24').style.zindex = 424;
+        var img_2016_24 = 'data/2016_24.png';
+        var img_bounds_2016_24 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2016_24 = new l.imageoverlay(img_2016_24,
+                                              img_bounds_2016_24,
+                                              {pane: 'pane_2016_24'});
+        bounds_group.addlayer(layer_2016_24);
+        map.addlayer(layer_2016_24);
+        map.createpane('pane_2017_25');
+        map.getpane('pane_2017_25').style.zindex = 425;
+        var img_2017_25 = 'data/2017_25.png';
+        var img_bounds_2017_25 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2017_25 = new l.imageoverlay(img_2017_25,
+                                              img_bounds_2017_25,
+                                              {pane: 'pane_2017_25'});
+        bounds_group.addlayer(layer_2017_25);
+        map.addlayer(layer_2017_25);
+        map.createpane('pane_2018_26');
+        map.getpane('pane_2018_26').style.zindex = 426;
+        var img_2018_26 = 'data/2018_26.png';
+        var img_bounds_2018_26 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2018_26 = new l.imageoverlay(img_2018_26,
+                                              img_bounds_2018_26,
+                                              {pane: 'pane_2018_26'});
+        bounds_group.addlayer(layer_2018_26);
+        map.addlayer(layer_2018_26);
+        map.createpane('pane_2019_27');
+        map.getpane('pane_2019_27').style.zindex = 427;
+        var img_2019_27 = 'data/2019_27.png';
+        var img_bounds_2019_27 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2019_27 = new l.imageoverlay(img_2019_27,
+                                              img_bounds_2019_27,
+                                              {pane: 'pane_2019_27'});
+        bounds_group.addlayer(layer_2019_27);
+        map.addlayer(layer_2019_27);
+        map.createpane('pane_2020_28');
+        map.getpane('pane_2020_28').style.zindex = 428;
+        var img_2020_28 = 'data/2020_28.png';
+        var img_bounds_2020_28 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2020_28 = new l.imageoverlay(img_2020_28,
+                                              img_bounds_2020_28,
+                                              {pane: 'pane_2020_28'});
+        bounds_group.addlayer(layer_2020_28);
+        map.addlayer(layer_2020_28);
+        map.createpane('pane_2021_29');
+        map.getpane('pane_2021_29').style.zindex = 429;
+        var img_2021_29 = 'data/2021_29.png';
+        var img_bounds_2021_29 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2021_29 = new l.imageoverlay(img_2021_29,
+                                              img_bounds_2021_29,
+                                              {pane: 'pane_2021_29'});
+        bounds_group.addlayer(layer_2021_29);
+        map.addlayer(layer_2021_29);
+        map.createpane('pane_2022_30');
+        map.getpane('pane_2022_30').style.zindex = 430;
+        var img_2022_30 = 'data/2022_30.png';
+        var img_bounds_2022_30 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2022_30 = new l.imageoverlay(img_2022_30,
+                                              img_bounds_2022_30,
+                                              {pane: 'pane_2022_30'});
+        bounds_group.addlayer(layer_2022_30);
+        map.addlayer(layer_2022_30);
+        map.createpane('pane_2023_31');
+        map.getpane('pane_2023_31').style.zindex = 431;
+        var img_2023_31 = 'data/2023_31.png';
+        var img_bounds_2023_31 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2023_31 = new l.imageoverlay(img_2023_31,
+                                              img_bounds_2023_31,
+                                              {pane: 'pane_2023_31'});
+        bounds_group.addlayer(layer_2023_31);
+        map.addlayer(layer_2023_31);
+        map.createpane('pane_2024_32');
+        map.getpane('pane_2024_32').style.zindex = 432;
+        var img_2024_32 = 'data/2024_32.png';
+        var img_bounds_2024_32 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+        var layer_2024_32 = new l.imageoverlay(img_2024_32,
+                                              img_bounds_2024_32,
+                                              {pane: 'pane_2024_32'});
+        bounds_group.addlayer(layer_2024_32);
+        map.addlayer(layer_2024_32);
+        const url = {"nominatim osm": "https://nominatim.openstreetmap.org/search?format=geojson&addressdetails=1&",
+        "france ban": "https://api-adresse.data.gouv.fr/search/?"}
+        var photoncontrol = l.control.photon({
+            url: url["nominatim osm"],
+            feedbacklabel: '',
+            position: 'topleft',
+            includeposition: true,
+            initial: true,
+            // resultshandler: myhandler,
+        }).addto(map);
+        photoncontrol._container.childnodes[0].style.borderradius="10px"
+        // create a variable to store the geojson data
+        var x = null;
+        // create a variable to store the marker
+        var marker = null;
+        // add an event listener to the photon control to create a marker from the returned geojson data
+        var z = null;
+        photoncontrol.on('selected', function(e) {
+            console.log(photoncontrol.search.resultscontainer);
+            if (x != null) {
+                map.removelayer(obj3.marker);
+                map.removelayer(x);
+            }
+            obj2.gcd = e.choice;
+            x = l.geojson(obj2.gcd).addto(map);
+            var label = typeof obj2.gcd.properties.label === 'undefined' ? obj2.gcd.properties.display_name : obj2.gcd.properties.label;
+            obj3.marker = l.marker(x.getlayers()[0].getlatlng()).bindpopup(label).addto(map);
+            map.setview(x.getlayers()[0].getlatlng(), 17);
+            z = typeof e.choice.properties.label === 'undefined'? e.choice.properties.display_name : e.choice.properties.label;
+            console.log(e);
+            e.target.input.value = z;
         });
-        </script>
+        var search = document.getelementsbyclassname("leaflet-photon leaflet-control")[0];
+        search.classlist.add("leaflet-control-search")
+        search.style.display = "flex";
+        search.style.backgroundcolor="rgba(255,255,255,0.5)" 
+
+        // create the new button element
+        var button = document.createelement("div");
+        button.id = "gcd-button-control";
+        button.classname = "gcd-gl-btn fa fa-search search-button";
+
+        // insert the button at the beginning of the search control
+        search.insertbefore(button, search.firstchild);
+        last = search.lastchild;
+        last.style.display = "none";
+        button.addeventlistener("click", function (e) {
+            if (last.style.display === "none") {
+                last.style.display = "block";
+            } else {
+                last.style.display = "none";
+            }
+        });
+        var overlaystree = [
+        {label: '<b>densidad de potencia instalada total</b>', collapsed: true, selectallcheckbox: true, children: [
+            {label: "2024", layer: layer_2024_32},
+            {label: "2023", layer: layer_2023_31},
+            {label: "2022", layer: layer_2022_30},
+            {label: "2021", layer: layer_2021_29},
+            {label: "2020", layer: layer_2020_28},
+            {label: "2019", layer: layer_2019_27},
+            {label: "2018", layer: layer_2018_26},
+            {label: "2017", layer: layer_2017_25},
+            {label: "2016", layer: layer_2016_24},
+            {label: "2015", layer: layer_2015_23},
+            {label: "2014", layer: layer_2014_22},
+            {label: "2013", layer: layer_2013_21},
+            {label: "2012", layer: layer_2012_20},
+            {label: "2011", layer: layer_2011_19},
+            {label: "2010", layer: layer_2010_18},
+            {label: "2009", layer: layer_2009_17},
+            {label: "2008", layer: layer_2008_16},
+            {label: "2007", layer: layer_2007_15},
+            {label: "2006", layer: layer_2006_14},
+            {label: "2005", layer: layer_2005_13},
+            {label: "2004", layer: layer_2004_12},
+            {label: "2003", layer: layer_2003_11},
+            {label: "2002", layer: layer_2002_10},
+            {label: "2001", layer: layer_2001_9},
+            {label: "2000", layer: layer_2000_8},
+            {label: "1999", layer: layer_1999_7},
+            {label: "1998", layer: layer_1998_6},
+            {label: "1997", layer: layer_1997_5},
+            {label: "1996", layer: layer_1996_4},]},
+            ]
+        var lay = l.control.layers.tree(null, overlaystree,{
+            //namedtoggle: true,
+            //selectorback: false,
+            //closedsymbol: '&#8862; &#x1f5c0;',
+            //openedsymbol: '&#8863; &#x1f5c1;',
+            //collapseall: 'collapse all',
+            //expandall: 'expand all',
+            collapsed: false, 
+        });
+        lay.addto(map);
+		document.addeventlistener("domcontentloaded", function() {
+            // set new layers list height which considers toggle icon
+            function newlayerslistheight() {
+                var layerscrollbarelement = document.queryselector('.leaflet-control-layers-scrollbar');
+                if (layerscrollbarelement) {
+                    var layerslistelement = document.queryselector('.leaflet-control-layers-list');
+                    var originalheight = layerslistelement.style.height 
+                        || window.getcomputedstyle(layerslistelement).height;
+                    var newheight = parsefloat(originalheight) - 50;
+                    layerslistelement.style.height = newheight + 'px';
+                }
+            }
+            var islayerslistexpanded = true;
+            var controllayerselement = document.queryselector('.leaflet-control-layers');
+            var togglelayercontrol = document.queryselector('.leaflet-control-layers-toggle');
+            // toggle collapsed/expanded and apply new layers list height
+            togglelayercontrol.addeventlistener('click', function() {
+                if (islayerslistexpanded) {
+                    controllayerselement.classlist.remove('leaflet-control-layers-expanded');
+                } else {
+                    controllayerselement.classlist.add('leaflet-control-layers-expanded');
+                }
+                islayerslistexpanded = !islayerslistexpanded;
+                newlayerslistheight()
+            });	
+			// apply new layers list height if toggle layerstree
+			if (controllayerselement) {
+				controllayerselement.addeventlistener('click', function(event) {
+					var togglelayerheaderpointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (togglelayerheaderpointer) {
+						newlayerslistheight();
+					}
+				});
+			}
+            // collapsed/expanded at start to apply new height
+            settimeout(function() {
+                togglelayercontrol.click();
+            }, 10);
+            settimeout(function() {
+                togglelayercontrol.click();
+            }, 10);
+            // collapsed touch/small screen
+            var issmallscreen = window.innerwidth < 650;
+            if (issmallscreen) {
+                settimeout(function() {
+                    controllayerselement.classlist.remove('leaflet-control-layers-expanded');
+                    islayerslistexpanded = !islayerslistexpanded;
+                }, 500);
+            }  
+        });       
+        setbounds();
+        l.imageoverlay.include({
+            getbounds: function () {
+                return this._bounds;
+            }
+        });
+var legend = l.control({ position: 'bottomleft' });
+
+legend.onadd = function (map) {
+var div = l.domutil.create('div', 'legend');
+div.innerhtml = '<img src="images/leyenda.png" style="width:150px;">';
+return div;
+};
+legend.addto(map);
+       
+var legend = l.control({ position: 'bottomleft' });
+
+	legend.onadd = function (map) {
+    	var div = l.domutil.create('div', 'legend');
+    	div.innerhtml = '<img src="images/leyenda.png" style="width:150px;">';
+    	return div;
+	};
+legend.addto(map);
+ </script>        
     </body>
+
 </html>
