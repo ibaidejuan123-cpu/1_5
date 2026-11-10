@@ -39,14 +39,14 @@
         <script src="js/leaflet-measure.js"></script>
       
         <script>
-        // 1. Inicialización principal del mapa con la extensión geográfica de España
+        // 1. CREACIÓN DEL MAPA (¡Esto debe ir antes que cualquier capa!)
         var map = L.map('map', {
             zoomControl: false, 
             maxZoom: 28, 
             minZoom: 1
         }).fitBounds([[34.4517317996146,-10.941381390934747],[44.028175045273564,12.679387416945799]]);
 
-        // 2. Mapa base actualizado sin restricciones de API Key
+        // 2. CAPA BASE DE FONDO (Carto Voyager sin restricciones de clave API)
         var osm = L.tileLayer(
             'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
             {
@@ -56,7 +56,7 @@
             }
         ).addTo(map);
 
-        // 3. Etiquetas superiores situadas por encima de los datos
+        // 3. ETIQUETAS SUPERIORES
         var osmLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             subdomains: 'abcd',
@@ -89,36 +89,7 @@
                 var src = imgTd.getAttribute('src');
                 if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
                     popup._contentNode.classList.add('media');
-                    setTimeout(function() {
-                        popup.update();
-                    }, 10);
-                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
-                    var audio = document.createElement('audio');
-                    audio.controls = true;
-                    audio.src = src;
-                    imgTd.parentNode.replaceChild(audio, imgTd);
-                    popup._contentNode.classList.add('media');
-                    setTimeout(function() {
-                        popup.setContent(tempDiv.innerHTML);
-                        popup.update();
-                    }, 10);
-                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
-                    var video = document.createElement('video');
-                    video.controls = true;
-                    video.src = src;
-                    video.style.width = "400px";
-                    video.style.height = "300px";
-                    video.style.maxHeight = "60vh";
-                    video.style.maxWidth = "60vw";
-                    imgTd.parentNode.replaceChild(video, imgTd);
-                    popup._contentNode.classList.add('media');
-                    video.addEventListener('loadedmetadata', function() {
-                        popup.update();
-                    });
-                    setTimeout(function() {
-                        popup.setContent(tempDiv.innerHTML);
-                        popup.update();
-                    }, 10);
+                    setTimeout(function() { popup.update(); }, 10);
                 } else {
                     popup._contentNode.classList.remove('media');
                 }
@@ -127,10 +98,7 @@
             }
         }
 
-        var zoomControl = L.control.zoom({
-            position: 'topleft'
-        }).addTo(map);
-
+        var zoomControl = L.control.zoom({ position: 'topleft' }).addTo(map);
         var measureControl = new L.Control.Measure({
             position: 'topleft',
             primaryLengthUnit: 'meters',
@@ -145,102 +113,20 @@
         var bounds_group = new L.featureGroup([]);
         function setBounds() {}
 
-        // Capas geográficas y raster (paneles de años)
-        map.createPane('pane_1996_4');
-        map.getPane('pane_1996_4').style.zIndex = 404;
-        var img_1996_4 = 'data/1996_4.png';
-        var img_bounds_1996_4 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_1996_4 = new L.imageOverlay(img_1996_4, img_bounds_1996_4, {pane: 'pane_1996_4'});
-        bounds_group.addLayer(layer_1996_4);
-        map.addLayer(layer_1996_4);
-
-        map.createPane('pane_1997_5');
-        map.getPane('pane_1997_5').style.zIndex = 405;
-        var img_1997_5 = 'data/1997_5.png';
-        var img_bounds_1997_5 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_1997_5 = new L.imageOverlay(img_1997_5, img_bounds_1997_5, {pane: 'pane_1997_5'});
-        bounds_group.addLayer(layer_1997_5);
-        map.addLayer(layer_1997_5);
-
-        map.createPane('pane_1998_6');
-        map.getPane('pane_1998_6').style.zIndex = 406;
-        var img_1998_6 = 'data/1998_6.png';
-        var img_bounds_1998_6 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_1998_6 = new L.imageOverlay(img_1998_6, img_bounds_1998_6, {pane: 'pane_1998_6'});
-        bounds_group.addLayer(layer_1998_6);
-        map.addLayer(layer_1998_6);
-
-        map.createPane('pane_1999_7');
-        map.getPane('pane_1999_7').style.zIndex = 407;
-        var img_1999_7 = 'data/1999_7.png';
-        var img_bounds_1999_7 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_1999_7 = new L.imageOverlay(img_1999_7, img_bounds_1999_7, {pane: 'pane_1999_7'});
-        bounds_group.addLayer(layer_1999_7);
-        map.addLayer(layer_1999_7);
-
-        map.createPane('pane_2000_8');
-        map.getPane('pane_2000_8').style.zIndex = 408;
-        var img_2000_8 = 'data/2000_8.png';
-        var img_bounds_2000_8 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2000_8 = new L.imageOverlay(img_2000_8, img_bounds_2000_8, {pane: 'pane_2000_8'});
-        bounds_group.addLayer(layer_2000_8);
-        map.addLayer(layer_2000_8);
-
-        map.createPane('pane_2001_9');
-        map.getPane('pane_2001_9').style.zIndex = 409;
-        var img_2001_9 = 'data/2001_9.png';
-        var img_bounds_2001_9 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2001_9 = new L.imageOverlay(img_2001_9, img_bounds_2001_9, {pane: 'pane_2001_9'});
-        bounds_group.addLayer(layer_2001_9);
-        map.addLayer(layer_2001_9);
-
-        map.createPane('pane_2002_10');
-        map.getPane('pane_2002_10').style.zIndex = 410;
-        var img_2002_10 = 'data/2002_10.png';
-        var img_bounds_2002_10 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2002_10 = new L.imageOverlay(img_2002_10, img_bounds_2002_10, {pane: 'pane_2002_10'});
-        bounds_group.addLayer(layer_2002_10);
-        map.addLayer(layer_2002_10);
-
-        map.createPane('pane_2003_11');
-        map.getPane('pane_2003_11').style.zIndex = 411;
-        var img_2003_11 = 'data/2003_11.png';
-        var img_bounds_2003_11 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2003_11 = new L.imageOverlay(img_2003_11, img_bounds_2003_11, {pane: 'pane_2003_11'});
-        bounds_group.addLayer(layer_2003_11);
-        map.addLayer(layer_2003_11);
-
-        map.createPane('pane_2004_12');
-        map.getPane('pane_2004_12').style.zIndex = 412;
-        var img_2004_12 = 'data/2004_12.png';
-        var img_bounds_2004_12 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2004_12 = new L.imageOverlay(img_2004_12, img_bounds_2004_12, {pane: 'pane_2004_12'});
-        bounds_group.addLayer(layer_2004_12);
-        map.addLayer(layer_2004_12);
-
-        map.createPane('pane_2005_13');
-        map.getPane('pane_2005_13').style.zIndex = 413;
-        var img_2005_13 = 'data/2005_13.png';
-        var img_bounds_2005_13 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2005_13 = new L.imageOverlay(img_2005_13, img_bounds_2005_13, {pane: 'pane_2005_13'});
-        bounds_group.addLayer(layer_2005_13);
-        map.addLayer(layer_2005_13);
-
-        map.createPane('pane_2006_14');
-        map.getPane('pane_2006_14').style.zIndex = 414;
-        var img_2006_14 = 'data/2006_14.png';
-        var img_bounds_2006_14 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2006_14 = new L.imageOverlay(img_2006_14, img_bounds_2006_14, {pane: 'pane_2006_14'});
-        bounds_group.addLayer(layer_2006_14);
-        map.addLayer(layer_2006_14);
-
-        map.createPane('pane_2007_15');
-        map.getPane('pane_2007_15').style.zIndex = 415;
-        var img_2007_15 = 'data/2007_15.png';
-        var img_bounds_2007_15 = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
-        var layer_2007_15 = new L.imageOverlay(img_2007_15, img_bounds_2007_15, {pane: 'pane_2007_15'});
-        bounds_group.addLayer(layer_2007_15);
-        map.addLayer(layer_2007_15);
+        // 4. PANELES DE IMÁGENES RASTER (Años 1996 a 2007)
+        var anos = ['1996_4', '1997_5', '1998_6', '1999_7', '2000_8', '2001_9', '2002_10', '2003_11', '2004_12', '2005_13', '2006_14', '2007_15'];
+        
+        anos.forEach(function(ano, index) {
+            var paneId = 'pane_' + ano;
+            map.createPane(paneId);
+            map.getPane(paneId).style.zIndex = 404 + index;
+            
+            var imgUrl = 'data/' + ano + '.png';
+            var imgBounds = [[27.485435179139373,-21.247945225428918],[43.88560879763062,4.762677413702979]];
+            var layerImg = new L.imageOverlay(imgUrl, imgBounds, {pane: paneId});
+            bounds_group.addLayer(layerImg);
+            map.addLayer(layerImg);
+        });
         </script>
     </body>
 </html>
