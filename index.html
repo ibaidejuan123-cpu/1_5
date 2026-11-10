@@ -56,12 +56,6 @@
 			}
 		).addTo(map);
 	
-var osmlabels = l.tilelayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-    attribution: '© openstreetmap contributors',
-    pane: 'shadowpane', // esto las sitúa por encima de los marcadores
-    zindex: 1000
-}).addto(map);
-
 
         var hash = new l.hash(map);
         map.attributioncontrol.setprefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="a js library for interactive maps">leaflet</a> &middot; <a href="https://qgis.org">qgis</a>');
