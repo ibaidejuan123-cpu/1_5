@@ -40,21 +40,17 @@
       
         <script>
        var map = L.map('map', {
-    zoomControl: false, 
-    maxZoom: 28, 
-    minZoom: 1
-}).fitBounds([[34.4517317996146,-10.941381390934747],[44.028175045273564,12.679387416945799]]);
-
-// Mapa base alternativo: ESRI Light Gray (Claro y sin saturar)
-var osm = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    {
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-        maxZoom: 19
-    }
-).addTo(map); // Asegúrate de añadirlo al mapa si usabas .addTo(map) después
-
-	osm.addTo(map);
+    		zoomControl: false, 
+    		maxZoom: 28, 
+   		 	minZoom: 1
+	   }).fitBounds([[34.4517317996146,-10.941381390934747],[44.028175045273564,12.679387416945799]]);
+		var osm = L.tileLayer(
+			'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+			{
+				attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+				maxZoom: 19
+			}
+		).addTo(map);
 	
 var osmLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap contributors',
