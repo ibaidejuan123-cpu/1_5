@@ -39,18 +39,14 @@
         <script src="js/leaflet-measure.js"></script>
       
         <script>
-       var map = L.map('map', {
-    		zoomControl: false, 
-    		maxZoom: 28, 
-   		 	minZoom: 1
-	   }).fitBounds([[34.4517317996146,-10.941381390934747],[44.028175045273564,12.679387416945799]]);
-		var osm = L.tileLayer(
-			'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-			{
-				attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-				maxZoom: 19
-			}
-		).addTo(map);
+var osm = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
+    {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }
+);
 	
 var osmLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap contributors',
